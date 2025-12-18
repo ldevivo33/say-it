@@ -72,6 +72,13 @@
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.06em;
+  gap: 10px;
+}
+
+.pill-sub {
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0;
 }
 
 .pill {
@@ -84,10 +91,6 @@
   color: var(--muted);
   font-weight: 600;
   font-size: 13px;
-}
-
-.date-pill {
-  margin-top: 10px;
 }
 
 .pill.light {
@@ -126,6 +129,13 @@
   margin-top: 8px;
   font-weight: 600;
   color: #1b4f9b;
+}
+
+.pronunciation {
+  margin-top: 6px;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .action-card .card-title {

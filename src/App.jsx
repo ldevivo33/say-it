@@ -198,13 +198,18 @@ function App() {
 
       <main className="content">
         <section className="card word-card">
-          <div className="pill main-pill">Word of the day</div>
+          <div className="pill main-pill">
+            <span>Word of the day</span>
+            <span className="pill-sub">
+              {word.date} (EST)
+            </span>
+          </div>
           <div className="word-row">
             <div>
               <div className="word">{word.word}</div>
-              <div className="pill date-pill">
-                {word.date} <span className="muted">(EST)</span>
-              </div>
+              {word.pronunciation && (
+                <div className="pronunciation">{word.pronunciation}</div>
+              )}
             </div>
             <div className="def">
               <div className="definition">{word.definition}</div>
