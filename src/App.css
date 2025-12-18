@@ -68,6 +68,12 @@
   background: #e7f2ff;
 }
 
+.main-pill {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
 .pill {
   display: inline-flex;
   align-items: center;
@@ -78,6 +84,10 @@
   color: var(--muted);
   font-weight: 600;
   font-size: 13px;
+}
+
+.date-pill {
+  margin-top: 10px;
 }
 
 .pill.light {
@@ -93,8 +103,8 @@
 }
 
 .word {
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 40px;
+  font-weight: 800;
 }
 
 .date {
@@ -110,6 +120,12 @@
 .example {
   color: var(--muted);
   margin-top: 6px;
+}
+
+.etymology {
+  margin-top: 8px;
+  font-weight: 600;
+  color: #1b4f9b;
 }
 
 .action-card .card-title {

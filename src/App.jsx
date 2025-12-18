@@ -198,15 +198,20 @@ function App() {
 
       <main className="content">
         <section className="card word-card">
-          <div className="pill">Word of the day · EST</div>
+          <div className="pill main-pill">Word of the day</div>
           <div className="word-row">
             <div>
               <div className="word">{word.word}</div>
-              <div className="date">{word.date}</div>
+              <div className="pill date-pill">
+                {word.date} <span className="muted">(EST)</span>
+              </div>
             </div>
             <div className="def">
               <div className="definition">{word.definition}</div>
               <div className="example">Example: {word.example}</div>
+              {word.etymology && (
+                <div className="etymology">Etymology: {word.etymology}</div>
+              )}
             </div>
           </div>
         </section>

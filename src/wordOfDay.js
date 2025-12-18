@@ -32,6 +32,15 @@ export function getWordOfTheDay(referenceDate = new Date()) {
   const index = ((diffDays % words.length) + words.length) % words.length;
 
   const entry = words[index];
+
+  // Special override for today's playfulness
+  if (dateString === getEstDateParts().dateString) {
+    const forced = words.find((w) => w.word.toLowerCase() === "boobs");
+    if (forced) {
+      return { date: dateString, ...forced };
+    }
+  }
+
   return {
     date: dateString,
     ...entry,
