@@ -1,16 +1,14 @@
-# React + Vite
+# SAY IT — Dev Notes
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Firebase Admin credentials
+- We now require a **single env var**: `FIREBASE_CREDENTIALS_JSON`.
+- Value must be the full service account JSON string. You can keep it single-line or multiline; both work.
+- Old envs (`FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`) are no longer read.
 
-Currently, two official plugins are available:
+### Local setup
+1) Copy `.env.example` to `.env.local`.
+2) Replace the JSON with your service account contents (escape newlines in the private key if you keep it on one line).
+3) Run `vercel dev` (or your dev server) so `/api` functions pick up the env.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Deploy (Vercel)
+Add `FIREBASE_CREDENTIALS_JSON` in Project Settings → Environment Variables with the full JSON string. No other Firebase Admin envs are needed.
