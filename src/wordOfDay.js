@@ -2,7 +2,8 @@ import { words } from "./wordList";
 
 const EST_TZ = "America/New_York";
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
-const cycleStartUtc = Date.UTC(2025, 0, 1); // 2025-01-01 is index 0
+// Start cycle on 2025-12-17 00:00 EST (which is 05:00 UTC)
+const cycleStartUtc = Date.UTC(2025, 11, 17, 5);
 
 export function getEstDateParts(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -31,18 +32,8 @@ export function getWordOfTheDay(referenceDate = new Date()) {
   const diffDays = Math.floor((todayUtc - cycleStartUtc) / MS_PER_DAY);
   const index = ((diffDays % words.length) + words.length) % words.length;
 
-  const entry = words[index];
-
-  // Special override for today's playfulness
-  if (dateString === getEstDateParts().dateString) {
-    const forced = words.find((w) => w.word.toLowerCase() === "boobs");
-    if (forced) {
-      return { date: dateString, ...forced };
-    }
-  }
-
   return {
     date: dateString,
-    ...entry,
+    ...words[index],
   };
 }
