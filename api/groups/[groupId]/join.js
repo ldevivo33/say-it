@@ -45,39 +45,41 @@ export default async function handler(req, res) {
         ? providedParticipantId
         : crypto.randomUUID();
 
-    // If this phone exists in any group, surface the existing membership.
-    const existingPhoneSnap = await db
-      .collectionGroup("participants")
+    // Check for existing participant in this group by phone (idempotent).
+    const phoneSnap = await groupRef
+      .collection("participants")
       .where("phone", "==", phone)
       .limit(1)
       .get();
-
-    if (!existingPhoneSnap.empty) {
-      const doc = existingPhoneSnap.docs[0];
-      const existingData = doc.data();
-      const existingGroupId = doc.ref.parent.parent.id;
-      if (existingGroupId !== groupId) {
-        json(res, 409, {
-          error: "This phone is already linked to another group.",
-          groupId: existingGroupId,
-          participantId: existingData.participantId,
-          username: existingData.username,
-        });
-        return;
-      }
-      participantId = doc.id; // Same group: reuse.
+    if (!phoneSnap.empty) {
+      participantId = phoneSnap.docs[0].id;
     }
 
-    // Also check within this group by phone to stay idempotent even if the collectionGroup misses.
-    if (existingPhoneSnap.empty) {
-      const phoneSnap = await groupRef
-        .collection("participants")
+    // Optional: detect if this phone belongs to another group; fail with conflict.
+    try {
+      const existingPhoneSnap = await db
+        .collectionGroup("participants")
         .where("phone", "==", phone)
         .limit(1)
         .get();
-      if (!phoneSnap.empty) {
-        participantId = phoneSnap.docs[0].id;
+      if (!existingPhoneSnap.empty) {
+        const doc = existingPhoneSnap.docs[0];
+        const existingData = doc.data();
+        const existingGroupId = doc.ref.parent.parent.id;
+        if (existingGroupId !== groupId) {
+          json(res, 409, {
+            error: "This phone is already linked to another group.",
+            groupId: existingGroupId,
+            participantId: existingData.participantId,
+            username: existingData.username,
+          });
+          return;
+        }
+        participantId = doc.id; // same group reuse
       }
+    } catch (err) {
+      // If collectionGroup is unavailable (indexes/permissions), continue with group-level check only.
+      console.warn("collectionGroup phone lookup skipped", err?.message || err);
     }
 
     const participantRef = groupRef.collection("participants").doc(participantId);
