@@ -15,3 +15,5 @@ Add `FIREBASE_CREDENTIALS_JSON` in Project Settings → Environment Variables wi
 
 ### Twilio (optional SMS)
 If you want SMS notifications on the first submission of the day, set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_FROM_NUMBER`. If any are missing, SMS is skipped automatically.
+
+- Optional: set `APP_URL` to include in welcome texts when a user joins a group.

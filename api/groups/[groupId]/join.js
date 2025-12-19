@@ -7,6 +7,8 @@ import {
   normalizePhone,
   parseJson,
 } from "../../_utils.js";
+import { sendSms } from "../../_twilio.js";
+import { getWordOfTheDay } from "../../../src/wordOfDay.js";
 
 export default async function handler(req, res) {
   if (!allowMethods(req, res, ["POST"])) return;
@@ -69,6 +71,14 @@ export default async function handler(req, res) {
     }
 
     await participantRef.set(participantData, { merge: true });
+
+    // Welcome SMS (fire-and-forget). Uses today's word in EST.
+    const appLink = process.env.APP_URL || "";
+    const { word } = getWordOfTheDay();
+    const message = `Welcome ${username}. Be the first to use ${word} in a sentence. ${appLink}`.trim();
+    if (phone) {
+      sendSms(phone, message);
+    }
 
     json(res, 200, { participantId, username, groupId });
   } catch (error) {
