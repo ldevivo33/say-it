@@ -12,7 +12,7 @@ if (accountSid && authToken && fromNumber) {
 export async function sendSms(to, body) {
   if (!client || !fromNumber) {
     console.warn("Twilio not configured; skipping SMS send.");
-    return;
+    return { ok: false, skipped: true, reason: "not_configured" };
   }
   try {
     await client.messages.create({
@@ -20,7 +20,9 @@ export async function sendSms(to, body) {
       from: fromNumber,
       body,
     });
+    return { ok: true };
   } catch (err) {
     console.error("Twilio send error", err);
+    return { ok: false, error: err.message };
   }
 }

@@ -104,7 +104,10 @@ export default async function handler(req, res) {
     const { word } = getWordOfTheDay();
     const message = `Welcome ${username}. Be the first to use ${word} in a sentence. ${appLink}`.trim();
     if (phone) {
-      sendSms(phone, message);
+      const result = await sendSms(phone, message);
+      if (!result?.ok) {
+        console.warn("Welcome SMS not sent", result);
+      }
     }
 
     json(res, 200, { participantId, username, groupId });

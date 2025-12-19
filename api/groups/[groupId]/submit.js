@@ -63,7 +63,12 @@ export default async function handler(req, res) {
       .filter((p) => p.phone && p.participantId !== participantId);
 
     const message = "Someone in your SAY IT group just used today’s word 👀";
-    await Promise.all(recipients.map((p) => sendSms(p.phone, message)));
+    const sendResults = await Promise.all(recipients.map((p) => sendSms(p.phone, message)));
+    sendResults.forEach((r) => {
+      if (!r?.ok) {
+        console.warn("Submission SMS not sent", r);
+      }
+    });
 
     json(res, 200, { submissionId });
   } catch (error) {

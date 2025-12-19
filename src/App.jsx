@@ -61,6 +61,17 @@ function App() {
       (s) => s.participantId === session.participantId && s.date === word.date
     );
 
+  function formatUsPhone(raw) {
+    const digits = raw.replace(/\D/g, "");
+    if (digits.startsWith("1")) {
+      return `+${digits}`;
+    }
+    if (digits.length === 10) {
+      return `+1${digits}`;
+    }
+    return digits ? `+${digits}` : "";
+  }
+
   useEffect(() => {
     if (session?.groupId) {
       fetchStatus(session.groupId, word.date);
@@ -88,8 +99,9 @@ function App() {
       setError("Pick a funny username first.");
       return;
     }
-    if (!phone.trim()) {
-      setError("Add a phone number to join and get texts.");
+    const formattedPhone = formatUsPhone(phone);
+    if (!formattedPhone || formattedPhone.length < 11) {
+      setError("Add a valid US phone number (10 digits).");
       return;
     }
     try {
@@ -98,14 +110,14 @@ function App() {
       const joinRes = await api.post(`/api/groups/${groupId}/join`, {
         username: username.trim(),
         participantId: session?.participantId,
-        phone: phone.trim(),
+        phone: formattedPhone,
         smsOptIn: true,
       });
       const nextSession = {
         participantId: joinRes.participantId,
         username: joinRes.username,
         groupId: joinRes.groupId,
-        phone: phone.trim(),
+        phone: formattedPhone,
       };
       saveSession(nextSession);
       setSession(nextSession);
@@ -131,8 +143,9 @@ function App() {
       setError("Pick a funny username first.");
       return;
     }
-    if (!phone.trim()) {
-      setError("Add a phone number to join and get texts.");
+    const formattedPhone = formatUsPhone(phone);
+    if (!formattedPhone || formattedPhone.length < 11) {
+      setError("Add a valid US phone number (10 digits).");
       return;
     }
     try {
@@ -140,14 +153,14 @@ function App() {
       const joinRes = await api.post(`/api/groups/${code}/join`, {
         username: username.trim(),
         participantId: session?.participantId,
-        phone: phone.trim(),
+        phone: formattedPhone,
         smsOptIn: true,
       });
       const nextSession = {
         participantId: joinRes.participantId,
         username: joinRes.username,
         groupId: joinRes.groupId,
-        phone: phone.trim(),
+        phone: formattedPhone,
       };
       saveSession(nextSession);
       setSession(nextSession);
@@ -301,19 +314,19 @@ function App() {
           <section className="card action-card">
             <div className="card-title">Grab friends and play</div>
             <label className="field">
+              <div className="label">Phone number (for notifications)</div>
+              <input
+                value={phone}
+                onChange={(e) => setPhone(formatUsPhone(e.target.value))}
+                placeholder="+15551234567"
+              />
+            </label>
+            <label className="field">
               <div className="label">Username</div>
               <input
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="fuzzy-yeti, pun-master, etc."
-              />
-            </label>
-            <label className="field">
-              <div className="label">Phone number (for notifications)</div>
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+15551234567"
               />
             </label>
             <label className="field">
