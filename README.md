@@ -12,3 +12,6 @@
 
 ### Deploy (Vercel)
 Add `FIREBASE_CREDENTIALS_JSON` in Project Settings → Environment Variables with the full JSON string. No other Firebase Admin envs are needed.
+
+### Twilio (optional SMS)
+If you want SMS notifications on the first submission of the day, set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_FROM_NUMBER`. If any are missing, SMS is skipped automatically.

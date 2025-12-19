@@ -3,6 +3,7 @@ import "./App.css";
 import { getWordOfTheDay } from "./wordOfDay";
 
 const storageKey = "sayit_session_v1";
+const reactionChoices = ["😂", "🔥", "🤔", "👀", "💀", "❤️"];
 
 const api = {
   async post(path, body) {
@@ -91,6 +92,7 @@ function App() {
       const { groupId } = await api.post("/api/groups");
       const joinRes = await api.post(`/api/groups/${groupId}/join`, {
         username: username.trim(),
+        participantId: session?.participantId,
       });
       const nextSession = {
         participantId: joinRes.participantId,
@@ -186,6 +188,47 @@ function App() {
   const participants = status?.participants || [];
   const submissions = status?.submissions || [];
 
+  function applyLocalReaction(submissionId, emoji) {
+    setStatus((prev) => {
+      if (!prev) return prev;
+      const nextSubs = prev.submissions.map((s) => {
+        if (s.submissionId !== submissionId) return s;
+        const reactions = { ...(s.reactions || {}) };
+        const current = Array.isArray(reactions[emoji]) ? reactions[emoji] : [];
+        const has = current.includes(session.participantId);
+        const updated = has
+          ? current.filter((id) => id !== session.participantId)
+          : [...current, session.participantId];
+        if (updated.length) {
+          reactions[emoji] = updated;
+        } else {
+          delete reactions[emoji];
+        }
+        return { ...s, reactions };
+      });
+      return { ...prev, submissions: nextSubs };
+    });
+  }
+
+  async function toggleReaction(submissionId, emoji) {
+    if (!session?.participantId || !session?.groupId) return;
+    applyLocalReaction(submissionId, emoji);
+    try {
+      await api.post(`/api/groups/${session.groupId}/react`, {
+        submissionId,
+        emoji,
+        participantId: session.participantId,
+      });
+    } catch (err) {
+      // Revert on failure
+      applyLocalReaction(submissionId, emoji);
+      setError(err.message || "Could not react");
+    }
+  }
+
+  const participantName = (participantId) =>
+    participants.find((p) => p.participantId === participantId)?.username || "Unknown";
+
   return (
     <div className="app-shell">
       <header className="hero">
@@ -200,9 +243,7 @@ function App() {
         <section className="card word-card">
           <div className="pill main-pill">
             <span>Word of the day</span>
-            <span className="pill-sub">
-              {word.date} (EST)
-            </span>
+            <span className="pill-sub">{word.date} (EST)</span>
           </div>
           <div className="word-row">
             <div>
@@ -328,12 +369,38 @@ function App() {
                     {submissions.map((s) => (
                       <li key={s.submissionId} className="list-item sentence">
                         <div className="name">
-                          {participants.find((p) => p.participantId === s.participantId)
-                            ?.username || "Unknown"}{" "}
+                          {participantName(s.participantId)}{" "}
                           <span className="muted">•</span>{" "}
                           <span className="muted">{word.date}</span>
                         </div>
                         <div>{s.sentence}</div>
+                        <div className="reactions">
+                          <div className="reaction-pills">
+                            {Object.entries(s.reactions || {}).map(([emoji, ids]) => (
+                              <button
+                                key={emoji}
+                                className={`reaction-pill ${
+                                  ids.includes(session?.participantId) ? "active" : ""
+                                }`}
+                                onClick={() => toggleReaction(s.submissionId, emoji)}
+                              >
+                                <span>{emoji}</span>
+                                <span className="count">{ids.length}</span>
+                              </button>
+                            ))}
+                          </div>
+                          <div className="reaction-choices">
+                            {reactionChoices.map((emoji) => (
+                              <button
+                                key={emoji}
+                                className="reaction-choice"
+                                onClick={() => toggleReaction(s.submissionId, emoji)}
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </li>
                     ))}
                     {submissions.length === 0 && (

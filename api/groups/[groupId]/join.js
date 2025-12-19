@@ -19,6 +19,8 @@ export default async function handler(req, res) {
     const body = await parseJson(req);
     const username = normalizeId(body.username);
     const providedParticipantId = normalizeId(body.participantId);
+    const phone = normalizeId(body.phone || "");
+    const smsOptIn = body.smsOptIn === true;
     if (!username) {
       json(res, 400, { error: "Username is required" });
       return;
@@ -37,15 +39,27 @@ export default async function handler(req, res) {
         : crypto.randomUUID();
 
     const participantRef = groupRef.collection("participants").doc(participantId);
-    await participantRef.set(
-      {
-        participantId,
-        groupId,
-        username,
-        joinedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
+    const existing = await participantRef.get();
+
+    const participantData = {
+      participantId,
+      groupId,
+      username,
+    };
+
+    if (phone) {
+      participantData.phone = phone;
+      participantData.smsOptIn = smsOptIn;
+    } else if (body.smsOptIn === false) {
+      participantData.smsOptIn = false;
+      participantData.phone = "";
+    }
+
+    if (!existing.exists) {
+      participantData.joinedAt = serverTimestamp();
+    }
+
+    await participantRef.set(participantData, { merge: true });
 
     json(res, 200, { participantId, username, groupId });
   } catch (error) {

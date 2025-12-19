@@ -351,6 +351,58 @@ button.ghost {
   justify-content: flex-end;
 }
 
+.reactions {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reaction-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.reaction-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--outline);
+  background: #f8fbff;
+  cursor: pointer;
+}
+
+.reaction-pill.active {
+  background: #e7f2ff;
+  border-color: #2b70f7;
+  color: #0f172a;
+}
+
+.reaction-pill .count {
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.reaction-choices {
+  display: flex;
+  gap: 6px;
+}
+
+.reaction-choice {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px dashed var(--outline);
+  background: #fff;
+  cursor: pointer;
+}
+
+.reaction-choice:hover {
+  border-color: #2b70f7;
+}
+
 @media (max-width: 768px) {
   .hero {
     flex-direction: row;
