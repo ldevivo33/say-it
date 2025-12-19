@@ -36,23 +36,11 @@ export default async function handler(req, res) {
 
     const submissionId = `${participantId}_${date}`;
     const submissionRef = groupRef.collection("submissions").doc(submissionId);
-    const dayMetaRef = groupRef.collection("dayMeta").doc(date);
-    let isFirstOfDay = false;
 
     await db.runTransaction(async (tx) => {
       const existing = await tx.get(submissionRef);
       if (existing.exists) {
         throw new Error("ALREADY_SUBMITTED");
-      }
-
-      const dayMetaSnap = await tx.get(dayMetaRef);
-      if (!dayMetaSnap.exists) {
-        isFirstOfDay = true;
-        tx.set(dayMetaRef, {
-          date,
-          firstSubmissionId: submissionId,
-          createdAt: serverTimestamp(),
-        });
       }
       tx.set(submissionRef, {
         submissionId,
@@ -65,19 +53,17 @@ export default async function handler(req, res) {
       });
     });
 
-    // Fire-and-forget SMS notifications for first submission of the day.
-    if (isFirstOfDay) {
-      const participantsSnap = await groupRef
-        .collection("participants")
-        .where("smsOptIn", "==", true)
-        .get();
-      const recipients = participantsSnap.docs
-        .map((doc) => doc.data())
-        .filter((p) => p.phone && p.participantId !== participantId);
+    // SMS notifications for every submission to all opted-in participants except submitter.
+    const participantsSnap = await groupRef
+      .collection("participants")
+      .where("smsOptIn", "==", true)
+      .get();
+    const recipients = participantsSnap.docs
+      .map((doc) => doc.data())
+      .filter((p) => p.phone && p.participantId !== participantId);
 
-      const message = "Someone in your SAY IT group just used today’s word 👀";
-      await Promise.all(recipients.map((p) => sendSms(p.phone, message)));
-    }
+    const message = "Someone in your SAY IT group just used today’s word 👀";
+    await Promise.all(recipients.map((p) => sendSms(p.phone, message)));
 
     json(res, 200, { submissionId });
   } catch (error) {

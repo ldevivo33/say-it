@@ -47,6 +47,7 @@ function App() {
   const [session, setSession] = useState(() => loadSession());
   const [username, setUsername] = useState(session?.username || "");
   const [groupCode, setGroupCode] = useState(session?.groupId || "");
+  const [phone, setPhone] = useState(session?.phone || "");
   const [sentence, setSentence] = useState("");
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -87,17 +88,24 @@ function App() {
       setError("Pick a funny username first.");
       return;
     }
+    if (!phone.trim()) {
+      setError("Add a phone number to join and get texts.");
+      return;
+    }
     try {
       setLoading(true);
       const { groupId } = await api.post("/api/groups");
       const joinRes = await api.post(`/api/groups/${groupId}/join`, {
         username: username.trim(),
         participantId: session?.participantId,
+        phone: phone.trim(),
+        smsOptIn: true,
       });
       const nextSession = {
         participantId: joinRes.participantId,
         username: joinRes.username,
         groupId: joinRes.groupId,
+        phone: phone.trim(),
       };
       saveSession(nextSession);
       setSession(nextSession);
@@ -123,16 +131,23 @@ function App() {
       setError("Pick a funny username first.");
       return;
     }
+    if (!phone.trim()) {
+      setError("Add a phone number to join and get texts.");
+      return;
+    }
     try {
       setLoading(true);
       const joinRes = await api.post(`/api/groups/${code}/join`, {
         username: username.trim(),
         participantId: session?.participantId,
+        phone: phone.trim(),
+        smsOptIn: true,
       });
       const nextSession = {
         participantId: joinRes.participantId,
         username: joinRes.username,
         groupId: joinRes.groupId,
+        phone: phone.trim(),
       };
       saveSession(nextSession);
       setSession(nextSession);
@@ -182,6 +197,26 @@ function App() {
     setSentence("");
     setInfo("");
     setError("");
+    setPhone("");
+    setUsername("");
+  }
+
+  async function handleLeaveGroup() {
+    if (!session?.participantId || !session?.groupId) {
+      handleSwitchGroup();
+      return;
+    }
+    try {
+      setLoading(true);
+      await api.post(`/api/groups/${session.groupId}/leave`, {
+        participantId: session.participantId,
+      });
+    } catch (err) {
+      setError(err.message || "Could not leave group");
+    } finally {
+      handleSwitchGroup();
+      setLoading(false);
+    }
   }
 
   const showGroupArea = !!session?.groupId;
@@ -271,6 +306,14 @@ function App() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="fuzzy-yeti, pun-master, etc."
+              />
+            </label>
+            <label className="field">
+              <div className="label">Phone number (for notifications)</div>
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+15551234567"
               />
             </label>
             <label className="field">
@@ -412,9 +455,14 @@ function App() {
             )}
 
             <div className="switch-row">
-              <button className="ghost" onClick={handleSwitchGroup}>
-                Switch group
-              </button>
+              <div className="switch-actions">
+                <button className="ghost" onClick={handleSwitchGroup}>
+                  Switch group
+                </button>
+                <button className="ghost danger" onClick={handleLeaveGroup}>
+                  Leave group
+                </button>
+              </div>
             </div>
           </section>
         )}

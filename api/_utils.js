@@ -34,6 +34,14 @@ export function normalizeGroupId(id = "") {
   return id.trim().toUpperCase();
 }
 
+export function normalizePhone(phone = "") {
+  const trimmed = phone.trim();
+  if (!trimmed) return "";
+  // Keep leading + and digits only
+  const cleaned = trimmed.replace(/(?!^\+)[^\d]/g, "");
+  return cleaned;
+}
+
 export function generateGroupId() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let id = "";
