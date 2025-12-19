@@ -1,4 +1,4 @@
-import { words } from "./wordList";
+import { words } from "./wordList.js";
 
 const EST_TZ = "America/New_York";
 const MS_PER_DAY = 1000 * 60 * 60 * 24;

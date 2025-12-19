@@ -45,14 +45,39 @@ export default async function handler(req, res) {
         ? providedParticipantId
         : crypto.randomUUID();
 
-    // If phone already exists in this group, reuse that participant to enforce idempotency.
-    const phoneSnap = await groupRef
-      .collection("participants")
+    // If this phone exists in any group, surface the existing membership.
+    const existingPhoneSnap = await db
+      .collectionGroup("participants")
       .where("phone", "==", phone)
       .limit(1)
       .get();
-    if (!phoneSnap.empty) {
-      participantId = phoneSnap.docs[0].id;
+
+    if (!existingPhoneSnap.empty) {
+      const doc = existingPhoneSnap.docs[0];
+      const existingData = doc.data();
+      const existingGroupId = doc.ref.parent.parent.id;
+      if (existingGroupId !== groupId) {
+        json(res, 409, {
+          error: "This phone is already linked to another group.",
+          groupId: existingGroupId,
+          participantId: existingData.participantId,
+          username: existingData.username,
+        });
+        return;
+      }
+      participantId = doc.id; // Same group: reuse.
+    }
+
+    // Also check within this group by phone to stay idempotent even if the collectionGroup misses.
+    if (existingPhoneSnap.empty) {
+      const phoneSnap = await groupRef
+        .collection("participants")
+        .where("phone", "==", phone)
+        .limit(1)
+        .get();
+      if (!phoneSnap.empty) {
+        participantId = phoneSnap.docs[0].id;
+      }
     }
 
     const participantRef = groupRef.collection("participants").doc(participantId);
